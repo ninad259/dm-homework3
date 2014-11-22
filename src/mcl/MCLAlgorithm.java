@@ -1,11 +1,15 @@
 package mcl;
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 import utils.FileUtils;
 
@@ -15,14 +19,14 @@ public class MCLAlgorithm {
 	private HashMap<String, ArrayList<String>> adjacencyList;
 	private HashMap<String, Integer> indexMap;
 	private double precision = 0.00000001;
-	
+
 	public MCLAlgorithm(String fileName){
 		this.fileName = "/"+fileName;
 		this.adjacencyList = new HashMap<String, ArrayList<String>>();
 		this.indexMap = new HashMap<String, Integer>();
 	}
 
-	public void clustering(int r){
+	public void clustering(double r){
 
 		double[][] adjacencyMatrix = null;
 		adjacencyMatrix = buildAdjacencyMatrix();
@@ -48,7 +52,8 @@ public class MCLAlgorithm {
 			transitionMatrix = inflatedTransitionMatrix; 
 		}
 		System.out.println("number of iterations: "+iterationNum);
-		findCluster(transitionMatrix);
+		findClusters(transitionMatrix);
+
 	}
 
 	public double[][] buildAdjacencyMatrix(){
@@ -115,7 +120,6 @@ public class MCLAlgorithm {
 
 
 			// fill the adjacencyMatrix using the data in the adjacencyList
-			System.out.println("size of input: "+adjacencyList.size());
 			Iterator iter = adjacencyList.entrySet().iterator();
 
 			while(iter.hasNext()){
@@ -172,7 +176,7 @@ public class MCLAlgorithm {
 		return expandedTransitionMatrix;
 	}
 
-	public double[][] inflate(double[][] expandedTransitionMatrix, int r){
+	public double[][] inflate(double[][] expandedTransitionMatrix, double r){
 		for(int i=0; i<expandedTransitionMatrix.length; i++){
 			for(int j=0; j<expandedTransitionMatrix.length; j++){
 				expandedTransitionMatrix[i][j] = Math.pow(expandedTransitionMatrix[i][j], r);
@@ -222,7 +226,7 @@ public class MCLAlgorithm {
 		}
 	}
 
-	public void findCluster(double[][] a){
+	public void findClusters(double[][] a){
 		HashMap<String, ArrayList<String>> clusterMap = new HashMap<String, ArrayList<String>>();
 
 		int clusterNum = 0 ;
@@ -244,6 +248,98 @@ public class MCLAlgorithm {
 				}
 			}
 		}
+		clusterMap = convertMap(clusterMap);
+		Map<Integer, Integer> pointToClusterMap = getPointToClusterMap(clusterMap);
+//		printMap2(pointToClusterMap);
 		System.out.println("num of clusters: "+clusterNum);
+		writeOutput(pointToClusterMap);
+	}
+
+	public void writeOutput(Map<Integer, Integer> map){
+		FileUtils fileUtils = new FileUtils();
+		BufferedWriter writer = fileUtils.writeInFile(fileName.substring(0, fileName.length()-3)+"clu");
+
+		if(writer!=null){
+			System.out.println("creating file");
+			Iterator iter = map.entrySet().iterator();
+			try {
+				writer.write("*Partition PartitionName");
+				writer.newLine();
+				writer.write("*Vertices "+map.size());
+				writer.newLine();
+				while(iter.hasNext()){
+					Entry entry = (Entry)iter.next();
+					Integer value = (Integer)entry.getValue();
+					writer.write(value+"");
+					writer.newLine();
+				}
+				writer.flush();
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}else{
+			System.out.println("writer is null");
+		}
+	}
+
+	public HashMap<String, ArrayList<String>> convertMap(HashMap<String, ArrayList<String>> map){
+		HashMap<String, ArrayList<String>> clusterMap = new HashMap<String, ArrayList<String>>();
+		Iterator iter = map.entrySet().iterator();
+		int count=0;
+		while(iter.hasNext()){
+			count++;
+			Entry entry = (Entry)iter.next();
+			ArrayList<String> list = (ArrayList<String>)entry.getValue();
+			clusterMap.put(count+"", list);
+		}
+		return clusterMap;
+	}
+
+	public void printMap(Map<String, ArrayList<String>> map){
+		Iterator iter = map.entrySet().iterator();
+		while(iter.hasNext()){
+			Entry entry = (Entry)iter.next();
+			String clusterId = (String)entry.getKey();
+			ArrayList<String> list = (ArrayList<String>)entry.getValue();
+
+			System.out.println("cluster id: "+clusterId+" elements -> "+list.toString());
+		}
+	}
+
+	public void printMap2(Map<Integer, Integer> map){
+		Iterator iter = map.entrySet().iterator();
+		while(iter.hasNext()){
+			Entry entry = (Entry)iter.next();
+			Integer key = (Integer)entry.getKey();
+			Integer value = (Integer)entry.getValue();
+			System.out.println("id: "+key+" cluster: "+value);
+		}
+	}
+
+	public Map<Integer, Integer> getPointToClusterMap(Map<String, ArrayList<String>> map){
+		Map<Integer, Integer> resultMap = new TreeMap<Integer, Integer>();
+		Iterator iter = map.entrySet().iterator();
+		while(iter.hasNext()){
+			Entry entry = (Entry)iter.next();
+			String key = (String)entry.getKey();
+			ArrayList<String> list = (ArrayList<String>)entry.getValue();
+			for(String s : list){
+				resultMap.put(Integer.parseInt(s), Integer.parseInt(key));
+			}
+		}
+		return resultMap;
+	}
+
+	public Map<Integer, String> getReverseIndexMap(){
+		Map<Integer, String> reverseIndexMap = new TreeMap<Integer, String>();
+		Iterator iter = indexMap.entrySet().iterator();
+		while(iter.hasNext()){
+			Entry entry = (Entry)iter.next();
+			String key = (String)entry.getKey();
+			Integer value = (Integer)entry.getValue();
+			reverseIndexMap.put(value, key);
+		}
+		return reverseIndexMap;
 	}
 }
