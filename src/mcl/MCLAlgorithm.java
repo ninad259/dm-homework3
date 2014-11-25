@@ -19,6 +19,8 @@ public class MCLAlgorithm {
 	private HashMap<String, ArrayList<String>> adjacencyList;
 	private HashMap<String, Integer> indexMap;
 	private double precision = 0.00000001;
+	private int e = 3;
+//	private double precision = 0.0;
 
 	public MCLAlgorithm(String fileName){
 		this.fileName = "/"+fileName;
@@ -39,21 +41,22 @@ public class MCLAlgorithm {
 		int iterationNum = 0;
 		while(true){
 			++iterationNum;
-			// expand
-			expandedTranstionMatrix = expand(transitionMatrix);
+			// expand step
+			expandedTranstionMatrix = expand(transitionMatrix, e);
 
-
+			// check if A = A*A i.e A becomes an idempotent matrix
 			if(equals(transitionMatrix, expandedTranstionMatrix)) break;
-			// inflate
+			
+			// inflate step
 			double[][] inflatedTransitionMatrix = null;
 			inflatedTransitionMatrix = inflate(expandedTranstionMatrix, r);
 
+			// prune step
 			prune(inflatedTransitionMatrix);
 			transitionMatrix = inflatedTransitionMatrix; 
 		}
 		System.out.println("number of iterations: "+iterationNum);
 		findClusters(transitionMatrix);
-
 	}
 
 	public double[][] buildAdjacencyMatrix(){
@@ -164,14 +167,25 @@ public class MCLAlgorithm {
 		return transitionMatrix;
 	}
 
-	public double[][] expand(double[][] transitionMatrix){
+	public double[][] expand(double[][] transitionMatrix, int e){
 		double[][] expandedTransitionMatrix = new double[transitionMatrix.length][transitionMatrix.length];
+		double[][] temp = new double[transitionMatrix.length][transitionMatrix.length];
+		
 		for(int i=0; i<transitionMatrix.length; i++){
 			for(int j=0; j<transitionMatrix.length; j++){
-				for(int k=0; k<transitionMatrix.length; k++){
-					expandedTransitionMatrix[i][j] += transitionMatrix[i][k] * transitionMatrix[k][j];
+				temp[i][j] = transitionMatrix[i][j];
+			}
+		}
+		
+		for(int p=0; p<e-1; p++){
+			for(int i=0; i<transitionMatrix.length; i++){
+				for(int j=0; j<transitionMatrix.length; j++){
+					for(int k=0; k<transitionMatrix.length; k++){
+						expandedTransitionMatrix[i][j] += temp[i][k] * transitionMatrix[k][j];
+					}
 				}
 			}
+			temp = expandedTransitionMatrix;
 		}
 		return expandedTransitionMatrix;
 	}
