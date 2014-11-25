@@ -19,9 +19,17 @@ public class MCLAlgorithm {
 	private HashMap<String, ArrayList<String>> adjacencyList;
 	private HashMap<String, Integer> indexMap;
 	private double precision = 0.00000001;
-	private int e = 3;
+	private int e = 2;
+//	private int e = 3;
 //	private double precision = 0.0;
 
+	public MCLAlgorithm(String fileName, double precision){
+		this.fileName = "/"+fileName;
+		this.adjacencyList = new HashMap<String, ArrayList<String>>();
+		this.indexMap = new HashMap<String, Integer>();
+		this.precision = precision;
+	}
+	
 	public MCLAlgorithm(String fileName){
 		this.fileName = "/"+fileName;
 		this.adjacencyList = new HashMap<String, ArrayList<String>>();
@@ -274,7 +282,6 @@ public class MCLAlgorithm {
 		BufferedWriter writer = fileUtils.writeInFile(fileName.substring(0, fileName.length()-3)+"clu");
 
 		if(writer!=null){
-			System.out.println("creating file");
 			Iterator iter = map.entrySet().iterator();
 			try {
 				writer.write("*Partition PartitionName");
