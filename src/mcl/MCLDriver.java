@@ -9,21 +9,28 @@ public class MCLDriver {
 		
 		double r = 0.0;
 		
-		// r = 1.36;
+		// e=2
+//		 r = 1.36;
+		 // e = 3
+//		 r = 1.70;
 //		mcl = new MCLAlgorithm("attweb_net.txt");
-		
-		 r = 1.21;
+
+		// e=2
 //		 r = 1.25;
-//		 r = 1.26;
-		mcl= new MCLAlgorithm("physics_collaboration_net.txt");
+//		e=3
+//		r = 1.751;
+//		mcl= new MCLAlgorithm("physics_collaboration_net.txt");
 		
-		// r = 1.19;
-//		mcl = new MCLAlgorithm("yeast_undirected_metabolic.txt");
+//		e = 2
+//		 r = 1.204;
+//		e=3
+//		r = 
+		mcl = new MCLAlgorithm("yeast_undirected_metabolic.txt");
 		
-//		for(int i=0; i<10;i++){
-//			r = 1.15+0.01*i;
+		for(int i=0; i<20;i++){
+			r = 1.5+0.01*i;
 			System.out.println("r: "+r);
 			mcl.clustering(r);	
-//		}
+		}
 	}
 }
